@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Valentine</title>
+
   <style>
     :root{
       --bg1:#ffd6e0;
@@ -14,10 +15,10 @@
       --yes:#ff4d6d;
       --yes2:#e93b5b;
 
-      /* feel knobs */
-      --repel-radius: 170;   /* px (cursor influence radius) */
-      --repel-strength: 2.1; /* bigger = stronger flee */
-      --max-speed: 7.5;      /* px per frame */
+      /* No-button avoidance feel */
+      --repel-radius: 210;   /* px: start running away earlier */
+      --repel-strength: 2.5; /* bigger = stronger flee */
+      --max-speed: 8.0;      /* px per frame */
     }
 
     *{ box-sizing:border-box; }
@@ -35,8 +36,8 @@
     }
 
     .card{
-      width: min(840px, 96vw);
-      height: min(520px, 80vh);
+      width: min(900px, 96vw);
+      height: min(560px, 82vh);
       background: var(--card);
       backdrop-filter: blur(8px);
       border-radius: 22px;
@@ -61,7 +62,6 @@
       user-select:none;
     }
 
-    /* “stage” is the interactive playground */
     .stage{
       position: relative;
       width: 100%;
@@ -69,6 +69,7 @@
       border-radius: 16px;
     }
 
+    /* Proposal buttons */
     .btn{
       position:absolute;
       padding: 14px 26px;
@@ -94,7 +95,7 @@
       color: #111;
     }
 
-    /* screens */
+    /* Screens (YAY + PLAN) */
     .screen{
       position:absolute;
       inset: 0;
@@ -126,7 +127,7 @@
       font-size: 16px;
       color: #333;
       margin: 0;
-      max-width: 680px;
+      max-width: 720px;
     }
 
     .gif{
@@ -136,13 +137,14 @@
     }
 
     .panel{
-      width: min(680px, 92%);
-      background: rgba(255,255,255,0.72);
+      width: min(720px, 92%);
+      background: rgba(255,255,255,0.78);
       border-radius: 18px;
       padding: 18px 16px;
       box-shadow: 0 10px 26px rgba(0,0,0,0.10);
       text-align:left;
     }
+
     .panel h3{
       margin: 0 0 6px;
       font-size: 18px;
@@ -160,6 +162,7 @@
       gap: 10px;
       margin-top: 10px;
     }
+
     .chip{
       border: none;
       border-radius: 999px;
@@ -168,8 +171,20 @@
       cursor: pointer;
       box-shadow: 0 10px 22px rgba(0,0,0,0.10);
       background: #fff;
+      transition: transform 0.08s ease, outline 0.08s ease, background 0.08s ease;
     }
     .chip:hover{ transform: translateY(-1px); }
+
+    .chip.selected{
+      outline: 2px solid rgba(255, 77, 109, 0.7);
+      transform: translateY(-1px);
+    }
+
+    .chip.primarySubmit{
+      background: #ff4d6d;
+      color:#fff;
+    }
+    .chip.primarySubmit:hover{ background:#e93b5b; }
 
     textarea{
       width: 100%;
@@ -186,24 +201,20 @@
       font-size: 12px;
       color: var(--muted);
       margin-top: 8px;
+      min-height: 16px;
     }
-
-    /* keep proposal buttons near each other */
-    #yesBtn, #noBtn { top: 56%; }
   </style>
 </head>
 
 <body>
   <div class="card">
-    <div class="title"><span id="name">Vaishnaavi 💖</span>, will you be my Valentine? 💖</div>
+    <div class="title"><span id="name">Vaishnavi</span>, will you be my Valentine? 💖</div>
     <div class="subtitle">Try clicking “No”. I dare you.</div>
 
     <div class="stage" id="stage">
-      <!-- Proposal buttons -->
       <button class="btn yes" id="yesBtn">Yes 💘</button>
       <button class="btn no"  id="noBtn">No</button>
 
-      <!-- Screen 2: celebration -->
       <div class="screen" id="yayScreen">
         <p class="big">YAY! 🎉</p>
         <img class="gif" alt="mind blown gif"
@@ -211,7 +222,6 @@
         <p class="mid">Okay done. You’re my Valentine now 😌💖</p>
       </div>
 
-      <!-- Screen 3: plan -->
       <div class="screen" id="planScreen">
         <div class="panel">
           <h3>Plan</h3>
@@ -220,9 +230,9 @@
             Please keep that time free.
           </p>
 
-          <div class="row">
-            <button class="chip" id="confirmTime">✅ I’m reserving 8:30 PM</button>
-            <button class="chip" id="timingIssue">❌ 8:30 won’t work — let’s talk</button>
+          <div class="row" id="timeRow">
+            <button class="chip" data-time="confirm">✅ 8:30 works</button>
+            <button class="chip" data-time="issue">❌ 8:30 won’t work</button>
           </div>
 
           <div style="height:14px;"></div>
@@ -246,22 +256,24 @@
 
           <h3>Zero-risk option</h3>
           <p>If you want full control, tell me the exact dish + restaurant (or cravings).</p>
-          <textarea id="dishText" placeholder="Type here... (e.g., ‘Paneer butter masala + garlic naan’, or ‘Sushi: salmon roll + miso soup’)"></textarea>
+          <textarea id="dishText" placeholder="Type here... (e.g., ‘Paneer butter masala + naan’, or ‘Sushi: salmon roll + miso soup’)"></textarea>
+
           <div class="row">
-            <button class="chip" id="sendDish">Send my exact choice</button>
+            <button class="chip primarySubmit" id="submitAll">Submit ✅</button>
           </div>
 
-          <div class="smallnote">
-            When you click a button, your email app will open with a pre-filled message to send me.
-          </div>
+          <div class="smallnote" id="statusLine"></div>
         </div>
       </div>
     </div>
   </div>
 
 <script>
-  // ====== CONFIG: set your email here ======
-  const MY_EMAIL = "samarthkalluraya@gmail.com"; // <-- CHANGE THIS
+  // ======================
+  // 1) PASTE YOUR FORMSPREE LINK HERE
+  // Example looks like: https://formspree.io/f/abcdwxyz
+  // ======================
+  const FORMSPREE_ENDPOINT = "https://formspree.io/f/xpqjqvan";
 
   // Optional: name via URL ?name=Vaishnavi
   const params = new URLSearchParams(location.search);
@@ -274,17 +286,17 @@
 
   const yayScreen  = document.getElementById("yayScreen");
   const planScreen = document.getElementById("planScreen");
+  const statusLine = document.getElementById("statusLine");
 
-  // ----- place buttons nicely (near each other, below title) -----
+  // ---- Place proposal buttons below the title and close together ----
   function placeInitialButtons() {
     const s = stage.getBoundingClientRect();
     const yesW = yesBtn.getBoundingClientRect().width;
     const noW  = noBtn.getBoundingClientRect().width;
 
     const centerX = s.width / 2;
-    const y = s.height * 0.48; // lower so it never overlaps title
+    const y = s.height * 0.46; // safely below header
 
-    // yes slightly left, no slightly right
     const gap = 18;
     yesBtn.style.left = (centerX - gap/2 - yesW) + "px";
     yesBtn.style.top  = y + "px";
@@ -293,7 +305,7 @@
     noBtn.style.top   = y + "px";
   }
 
-  // Keep No button state in stage coords
+  // ---- Smooth avoidance (potential-field-ish) ----
   let noPos = { x: 0, y: 0 };
   let mouse = { x: null, y: null };
   let animOn = true;
@@ -313,32 +325,20 @@
     syncNoToStyle();
   }
 
-  function openMail(subject, body) {
-    const url =
-      "mailto:" + encodeURIComponent(MY_EMAIL) +
-      "?subject=" + encodeURIComponent(subject) +
-      "&body=" + encodeURIComponent(body);
-    window.location.href = url;
-  }
-
-  // ----- Potential-field style avoidance -----
   function stepAvoidance() {
     if (!animOn) return;
 
     const s = stage.getBoundingClientRect();
     const n = noBtn.getBoundingClientRect();
 
-    // If no mouse yet, just idle
     if (mouse.x === null || mouse.y === null) {
       requestAnimationFrame(stepAvoidance);
       return;
     }
 
-    // Current center of no button (stage coords)
     const nx = noPos.x + n.width/2;
     const ny = noPos.y + n.height/2;
 
-    // Mouse position (stage coords)
     const mx = mouse.x;
     const my = mouse.y;
 
@@ -346,27 +346,24 @@
     const dy = ny - my;
     const dist = Math.hypot(dx, dy);
 
-    const R = Number(getComputedStyle(document.documentElement).getPropertyValue("--repel-radius")) || 170;
-    const strength = Number(getComputedStyle(document.documentElement).getPropertyValue("--repel-strength")) || 2.1;
-    const maxSpeed = Number(getComputedStyle(document.documentElement).getPropertyValue("--max-speed")) || 7.5;
+    const rootStyle = getComputedStyle(document.documentElement);
+    const R = Number(rootStyle.getPropertyValue("--repel-radius")) || 210;
+    const strength = Number(rootStyle.getPropertyValue("--repel-strength")) || 2.5;
+    const maxSpeed = Number(rootStyle.getPropertyValue("--max-speed")) || 8.0;
 
-    // Repel only when within radius
     let vx = 0, vy = 0;
     if (dist < R && dist > 0.001) {
-      // Smooth repulsion magnitude: stronger when closer
       const t = (R - dist) / R;            // 0..1
-      const mag = strength * (t * t) * maxSpeed; // quadratic ease
+      const mag = strength * (t * t) * maxSpeed;
       vx = (dx / dist) * mag;
       vy = (dy / dist) * mag;
     }
 
-    // Add soft "keep moving" jitter when close (prevents trapping)
     if (dist < R * 0.65) {
       vx += (Math.random() - 0.5) * 0.9;
       vy += (Math.random() - 0.5) * 0.9;
     }
 
-    // Apply velocity, clamp to arena bounds
     const pad = 10;
     const maxX = s.width  - n.width  - pad;
     const maxY = s.height - n.height - pad;
@@ -378,14 +375,12 @@
     requestAnimationFrame(stepAvoidance);
   }
 
-  // Keep mouse pos updated (stage coords)
   stage.addEventListener("mousemove", (e) => {
     const s = stage.getBoundingClientRect();
     mouse.x = e.clientX - s.left;
     mouse.y = e.clientY - s.top;
   });
 
-  // Mobile: on touch near stage, set mouse there so it runs away
   stage.addEventListener("touchmove", (e) => {
     const s = stage.getBoundingClientRect();
     const t = e.touches[0];
@@ -393,71 +388,109 @@
     mouse.y = t.clientY - s.top;
   }, { passive: true });
 
-  // If they manage to click "No", do nothing (or tease)
-  noBtn.addEventListener("click", () => {
-    // nothing on purpose
-  });
-
-  // ----- Flow transitions -----
+  // ---- Flow transitions ----
   yesBtn.addEventListener("click", () => {
-    // hide proposal buttons
     yesBtn.style.display = "none";
     noBtn.style.display  = "none";
 
-    // show yay
     yayScreen.classList.add("show");
 
-    // after a short moment, switch to plan
     setTimeout(() => {
       yayScreen.classList.remove("show");
       planScreen.classList.add("show");
-    }, 1600);
+    }, 1500);
   });
 
-  // Plan page actions
-  document.getElementById("confirmTime").addEventListener("click", () => {
-    openMail(
-      "Valentine date confirmed ✅",
-      `I’m reserving Feb 14, 8:30 PM IST.\n\n– ${nm || "Valentine"}`
-    );
-  });
+  // ---- One form submit (no email popup) via Formspree ----
+  const state = { time: null, cuisine: null };
 
-  document.getElementById("timingIssue").addEventListener("click", () => {
-    openMail(
-      "Valentine timing issue ❌",
-      `8:30 PM IST doesn’t work for me. Let’s decide a different time.\n\nSuggested times (optional):\n- \n- \n\n– ${nm || "Valentine"}`
-    );
+  function setSelected(groupEl, btn) {
+    [...groupEl.querySelectorAll("button")].forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+  }
+
+  document.getElementById("timeRow").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-time]");
+    if (!btn) return;
+    state.time = btn.getAttribute("data-time"); // confirm / issue
+    setSelected(document.getElementById("timeRow"), btn);
+    statusLine.textContent = "";
   });
 
   document.getElementById("cuisineRow").addEventListener("click", (e) => {
     const btn = e.target.closest("button[data-cuisine]");
     if (!btn) return;
-    const cuisine = btn.getAttribute("data-cuisine");
-    openMail(
-      "Valentine cuisine choice 🍽️",
-      `Cuisine I choose: ${cuisine}\n\n(You pick the dish 😌)\n\n– ${nm || "Valentine"}`
-    );
+    state.cuisine = btn.getAttribute("data-cuisine");
+    setSelected(document.getElementById("cuisineRow"), btn);
+    statusLine.textContent = "";
   });
 
-  document.getElementById("sendDish").addEventListener("click", () => {
-    const txt = document.getElementById("dishText").value.trim();
-    if (!txt) {
-      alert("Type the dish/restaurant first 🙂");
+  document.getElementById("submitAll").addEventListener("click", async () => {
+    const dish = document.getElementById("dishText").value.trim();
+
+    if (!FORMSPREE_ENDPOINT || FORMSPREE_ENDPOINT.includes("PASTE_YOUR_FORMSPREE_URL_HERE")) {
+      statusLine.textContent = "Samarth: paste your Formspree link into the code first 🙂";
       return;
     }
-    openMail(
-      "Valentine exact dish choice 📝",
-      `My exact choice:\n${txt}\n\n– ${nm || "Valentine"}`
-    );
+
+    if (!state.time) {
+      statusLine.textContent = "Pick whether 8:30 works (or doesn’t).";
+      return;
+    }
+
+    if (!state.cuisine && !dish) {
+      statusLine.textContent = "Pick a cuisine OR type the exact dish.";
+      return;
+    }
+
+    statusLine.textContent = "Submitting…";
+
+    const payload = {
+      name: nm || document.getElementById("name").textContent || "Valentine",
+      date: "Feb 14",
+      time_ist: "8:30 PM IST",
+      time_status: state.time,     // confirm/issue
+      cuisine: state.cuisine || "",
+      exact_dish: dish || "",
+      page: window.location.href
+    };
+
+    try {
+      const res = await fetch(FORMSPREE_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("submit failed");
+
+      // Success screen
+      const card = document.querySelector(".card");
+      card.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:26px;">
+          <div style="font-size:48px;font-weight:900;">Sent ✅</div>
+          <div style="margin-top:10px;color:#333;font-size:16px;">
+            Got it. I’ll take it from here 😌💖
+          </div>
+          <div style="margin-top:10px;color:#666;font-size:13px;">
+            (You can close this tab now.)
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      statusLine.textContent = "Submit failed. Try again (adblocker can block it sometimes).";
+    }
   });
 
-  // init positions
+  // init
   window.addEventListener("resize", () => {
     placeInitialButtons();
     initNoPosFromDOM();
   });
 
-  // First paint
   requestAnimationFrame(() => {
     placeInitialButtons();
     initNoPosFromDOM();
