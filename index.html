@@ -327,53 +327,72 @@
 
   function stepAvoidance() {
     if (!animOn) return;
-
+  
     const s = stage.getBoundingClientRect();
     const n = noBtn.getBoundingClientRect();
-
+  
     if (mouse.x === null || mouse.y === null) {
       requestAnimationFrame(stepAvoidance);
       return;
     }
-
+  
     const nx = noPos.x + n.width/2;
     const ny = noPos.y + n.height/2;
-
+  
     const mx = mouse.x;
     const my = mouse.y;
-
+  
     const dx = nx - mx;
     const dy = ny - my;
     const dist = Math.hypot(dx, dy);
-
+  
     const rootStyle = getComputedStyle(document.documentElement);
     const R = Number(rootStyle.getPropertyValue("--repel-radius")) || 210;
     const strength = Number(rootStyle.getPropertyValue("--repel-strength")) || 2.5;
     const maxSpeed = Number(rootStyle.getPropertyValue("--max-speed")) || 8.0;
-
+  
+    const panicDistance = Math.max(n.width, n.height) * 0.8;
+  
+    // 🔥 PANIC TELEPORT IF CURSOR ENTERS BUTTON REGION
+    if (dist < panicDistance) {
+      const pad = 20;
+      const maxX = s.width  - n.width  - pad;
+      const maxY = s.height - n.height - pad;
+  
+      noPos.x = Math.random() * (maxX - pad) + pad;
+      noPos.y = Math.random() * (maxY - pad) + pad;
+      syncNoToStyle();
+  
+      requestAnimationFrame(stepAvoidance);
+      return;
+    }
+  
     let vx = 0, vy = 0;
+  
     if (dist < R && dist > 0.001) {
-      const t = (R - dist) / R;            // 0..1
+      const t = (R - dist) / R;
       const mag = strength * (t * t) * maxSpeed;
+  
       vx = (dx / dist) * mag;
       vy = (dy / dist) * mag;
     }
-
-    if (dist < R * 0.65) {
-      vx += (Math.random() - 0.5) * 0.9;
-      vy += (Math.random() - 0.5) * 0.9;
+  
+    if (dist < R * 0.7) {
+      vx += (Math.random() - 0.5) * 1.2;
+      vy += (Math.random() - 0.5) * 1.2;
     }
-
+  
     const pad = 10;
     const maxX = s.width  - n.width  - pad;
     const maxY = s.height - n.height - pad;
-
-    noPos.x = clamp(noPos.x + vx, pad, maxX);
-    noPos.y = clamp(noPos.y + vy, pad, maxY);
-
+  
+    noPos.x = Math.max(pad, Math.min(noPos.x + vx, maxX));
+    noPos.y = Math.max(pad, Math.min(noPos.y + vy, maxY));
+  
     syncNoToStyle();
     requestAnimationFrame(stepAvoidance);
   }
+
 
   stage.addEventListener("mousemove", (e) => {
     const s = stage.getBoundingClientRect();
