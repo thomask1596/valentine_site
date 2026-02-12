@@ -1,104 +1,468 @@
-<!DOCTYPE html>
-<html> 
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Will you be my Valentine?</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Valentine</title>
   <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(135deg, #ffd6e0, #ffc2d1);
-      font-family: Arial, sans-serif;
+    :root{
+      --bg1:#ffd6e0;
+      --bg2:#ffc2d1;
+      --card:#ffffffee;
+      --text:#1f1f1f;
+      --muted:#666;
+      --yes:#ff4d6d;
+      --yes2:#e93b5b;
+
+      /* feel knobs */
+      --repel-radius: 170;   /* px (cursor influence radius) */
+      --repel-strength: 2.1; /* bigger = stronger flee */
+      --max-speed: 7.5;      /* px per frame */
     }
 
-    .card {
-      background: white;
-      padding: 40px;
-      border-radius: 20px;
-      text-align: center;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-      width: 90%;
-      max-width: 500px;
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      padding: 18px;
+      color: var(--text);
+    }
+
+    .card{
+      width: min(840px, 96vw);
+      height: min(520px, 80vh);
+      background: var(--card);
+      backdrop-filter: blur(8px);
+      border-radius: 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.16);
       position: relative;
+      overflow: hidden;
+      padding: 28px 24px 18px;
     }
 
-    h1 {
-      margin-bottom: 40px;
-      font-size: 26px;
+    .title{
+      text-align:center;
+      font-size: clamp(22px, 3.5vw, 34px);
+      font-weight: 900;
+      letter-spacing: -0.4px;
+      margin: 6px 0 6px;
+    }
+    .subtitle{
+      text-align:center;
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0 0 14px;
+      user-select:none;
     }
 
-    .btn {
-      padding: 14px 30px;
+    /* “stage” is the interactive playground */
+    .stage{
+      position: relative;
+      width: 100%;
+      height: calc(100% - 90px);
+      border-radius: 16px;
+    }
+
+    .btn{
+      position:absolute;
+      padding: 14px 26px;
       font-size: 18px;
-      border-radius: 30px;
+      border-radius: 999px;
       border: none;
       cursor: pointer;
-      position: absolute;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.14);
+      user-select:none;
+      transition: transform 0.06s ease, background 0.15s ease;
+      white-space: nowrap;
+    }
+    .btn:active{ transform: scale(0.98); }
+
+    .yes{
+      background: var(--yes);
+      color: #fff;
+    }
+    .yes:hover{ background: var(--yes2); }
+
+    .no{
+      background: #efefef;
+      color: #111;
     }
 
-    #yesBtn {
-      background: #ff4d6d;
-      color: white;
-      left: 40%;
-      top: 60%;
-      transform: translate(-50%, -50%);
+    /* screens */
+    .screen{
+      position:absolute;
+      inset: 0;
+      display:flex;
+      flex-direction: column;
+      align-items:center;
+      justify-content:center;
+      gap: 12px;
+      opacity: 0;
+      transform: translateY(6px);
+      pointer-events:none;
+      transition: opacity 0.25s ease, transform 0.25s ease;
+      padding: 10px 16px;
+      text-align:center;
+    }
+    .screen.show{
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events:auto;
     }
 
-    #noBtn {
-      background: #eeeeee;
-      left: 60%;
-      top: 60%;
-      transform: translate(-50%, -50%);
+    .big{
+      font-size: 44px;
+      font-weight: 900;
+      letter-spacing: -0.6px;
+      margin: 0;
+    }
+    .mid{
+      font-size: 16px;
+      color: #333;
+      margin: 0;
+      max-width: 680px;
     }
 
-    img {
-      max-width: 90%;
-      border-radius: 15px;
-      margin-top: 20px;
+    .gif{
+      width: min(420px, 90%);
+      border-radius: 16px;
+      box-shadow: 0 16px 44px rgba(0,0,0,0.18);
     }
+
+    .panel{
+      width: min(680px, 92%);
+      background: rgba(255,255,255,0.72);
+      border-radius: 18px;
+      padding: 18px 16px;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.10);
+      text-align:left;
+    }
+    .panel h3{
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+    .panel p{
+      margin: 0 0 10px;
+      color:#444;
+      font-size: 14px;
+      line-height: 1.35;
+    }
+
+    .row{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .chip{
+      border: none;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(0,0,0,0.10);
+      background: #fff;
+    }
+    .chip:hover{ transform: translateY(-1px); }
+
+    textarea{
+      width: 100%;
+      min-height: 90px;
+      border-radius: 14px;
+      border: 1px solid #ddd;
+      padding: 10px 12px;
+      font-size: 14px;
+      outline: none;
+      resize: vertical;
+    }
+
+    .smallnote{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    /* keep proposal buttons near each other */
+    #yesBtn, #noBtn { top: 56%; }
   </style>
 </head>
 
 <body>
+  <div class="card">
+    <div class="title"><span id="name">Vaishnaavi 💖</span>, will you be my Valentine? 💖</div>
+    <div class="subtitle">Try clicking “No”. I dare you.</div>
 
-<div class="card" id="card">
-  <h1 id="question">Will you be my Valentine? 💖</h1>
+    <div class="stage" id="stage">
+      <!-- Proposal buttons -->
+      <button class="btn yes" id="yesBtn">Yes 💘</button>
+      <button class="btn no"  id="noBtn">No</button>
 
-  <button class="btn" id="yesBtn">Yes 💘</button>
-  <button class="btn" id="noBtn">No</button>
-</div>
+      <!-- Screen 2: celebration -->
+      <div class="screen" id="yayScreen">
+        <p class="big">YAY! 🎉</p>
+        <img class="gif" alt="mind blown gif"
+             src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif">
+        <p class="mid">Okay done. You’re my Valentine now 😌💖</p>
+      </div>
+
+      <!-- Screen 3: plan -->
+      <div class="screen" id="planScreen">
+        <div class="panel">
+          <h3>Plan</h3>
+          <p>
+            Valentine dinner date on <b>Feb 14</b> at <b>8:30 PM IST</b>.<br/>
+            Please keep that time free.
+          </p>
+
+          <div class="row">
+            <button class="chip" id="confirmTime">✅ I’m reserving 8:30 PM</button>
+            <button class="chip" id="timingIssue">❌ 8:30 won’t work — let’s talk</button>
+          </div>
+
+          <div style="height:14px;"></div>
+
+          <h3>Cuisine</h3>
+          <p>
+            Pick a cuisine — I’ll handle the rest.
+            <span style="color:#666;">(I’ll pick the dish. Minor risk, maximum romance.)</span>
+          </p>
+
+          <div class="row" id="cuisineRow">
+            <button class="chip" data-cuisine="Italian 🍝">Italian 🍝</button>
+            <button class="chip" data-cuisine="Japanese 🍣">Japanese 🍣</button>
+            <button class="chip" data-cuisine="Pizza 🍕">Pizza 🍕</button>
+            <button class="chip" data-cuisine="Indian 🍛">Indian 🍛</button>
+            <button class="chip" data-cuisine="Healthy / Light 🥗">Healthy / Light 🥗</button>
+            <button class="chip" data-cuisine="Surprise me 🎲">Surprise me 🎲</button>
+          </div>
+
+          <div style="height:14px;"></div>
+
+          <h3>Zero-risk option</h3>
+          <p>If you want full control, tell me the exact dish + restaurant (or cravings).</p>
+          <textarea id="dishText" placeholder="Type here... (e.g., ‘Paneer butter masala + garlic naan’, or ‘Sushi: salmon roll + miso soup’)"></textarea>
+          <div class="row">
+            <button class="chip" id="sendDish">Send my exact choice</button>
+          </div>
+
+          <div class="smallnote">
+            When you click a button, your email app will open with a pre-filled message to send me.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <script>
-  const noBtn = document.getElementById("noBtn");
+  // ====== CONFIG: set your email here ======
+  const MY_EMAIL = "samarthkalluraya@gmail.com"; // <-- CHANGE THIS
+
+  // Optional: name via URL ?name=Vaishnavi
+  const params = new URLSearchParams(location.search);
+  const nm = params.get("name");
+  if (nm) document.getElementById("name").textContent = nm;
+
+  const stage = document.getElementById("stage");
   const yesBtn = document.getElementById("yesBtn");
-  const card = document.getElementById("card");
+  const noBtn  = document.getElementById("noBtn");
 
-  function moveNoButton() {
-    const cardRect = card.getBoundingClientRect();
+  const yayScreen  = document.getElementById("yayScreen");
+  const planScreen = document.getElementById("planScreen");
 
-    const newX = Math.random() * (cardRect.width - 120);
-    const newY = Math.random() * (cardRect.height - 60);
+  // ----- place buttons nicely (near each other, below title) -----
+  function placeInitialButtons() {
+    const s = stage.getBoundingClientRect();
+    const yesW = yesBtn.getBoundingClientRect().width;
+    const noW  = noBtn.getBoundingClientRect().width;
 
-    noBtn.style.left = newX + "px";
-    noBtn.style.top = newY + "px";
+    const centerX = s.width / 2;
+    const y = s.height * 0.48; // lower so it never overlaps title
+
+    // yes slightly left, no slightly right
+    const gap = 18;
+    yesBtn.style.left = (centerX - gap/2 - yesW) + "px";
+    yesBtn.style.top  = y + "px";
+
+    noBtn.style.left  = (centerX + gap/2) + "px";
+    noBtn.style.top   = y + "px";
   }
 
-  noBtn.addEventListener("mouseover", moveNoButton);
-  noBtn.addEventListener("touchstart", moveNoButton);
+  // Keep No button state in stage coords
+  let noPos = { x: 0, y: 0 };
+  let mouse = { x: null, y: null };
+  let animOn = true;
 
+  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
+
+  function syncNoToStyle() {
+    noBtn.style.left = noPos.x + "px";
+    noBtn.style.top  = noPos.y + "px";
+  }
+
+  function initNoPosFromDOM() {
+    const s = stage.getBoundingClientRect();
+    const n = noBtn.getBoundingClientRect();
+    noPos.x = n.left - s.left;
+    noPos.y = n.top  - s.top;
+    syncNoToStyle();
+  }
+
+  function openMail(subject, body) {
+    const url =
+      "mailto:" + encodeURIComponent(MY_EMAIL) +
+      "?subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(body);
+    window.location.href = url;
+  }
+
+  // ----- Potential-field style avoidance -----
+  function stepAvoidance() {
+    if (!animOn) return;
+
+    const s = stage.getBoundingClientRect();
+    const n = noBtn.getBoundingClientRect();
+
+    // If no mouse yet, just idle
+    if (mouse.x === null || mouse.y === null) {
+      requestAnimationFrame(stepAvoidance);
+      return;
+    }
+
+    // Current center of no button (stage coords)
+    const nx = noPos.x + n.width/2;
+    const ny = noPos.y + n.height/2;
+
+    // Mouse position (stage coords)
+    const mx = mouse.x;
+    const my = mouse.y;
+
+    const dx = nx - mx;
+    const dy = ny - my;
+    const dist = Math.hypot(dx, dy);
+
+    const R = Number(getComputedStyle(document.documentElement).getPropertyValue("--repel-radius")) || 170;
+    const strength = Number(getComputedStyle(document.documentElement).getPropertyValue("--repel-strength")) || 2.1;
+    const maxSpeed = Number(getComputedStyle(document.documentElement).getPropertyValue("--max-speed")) || 7.5;
+
+    // Repel only when within radius
+    let vx = 0, vy = 0;
+    if (dist < R && dist > 0.001) {
+      // Smooth repulsion magnitude: stronger when closer
+      const t = (R - dist) / R;            // 0..1
+      const mag = strength * (t * t) * maxSpeed; // quadratic ease
+      vx = (dx / dist) * mag;
+      vy = (dy / dist) * mag;
+    }
+
+    // Add soft "keep moving" jitter when close (prevents trapping)
+    if (dist < R * 0.65) {
+      vx += (Math.random() - 0.5) * 0.9;
+      vy += (Math.random() - 0.5) * 0.9;
+    }
+
+    // Apply velocity, clamp to arena bounds
+    const pad = 10;
+    const maxX = s.width  - n.width  - pad;
+    const maxY = s.height - n.height - pad;
+
+    noPos.x = clamp(noPos.x + vx, pad, maxX);
+    noPos.y = clamp(noPos.y + vy, pad, maxY);
+
+    syncNoToStyle();
+    requestAnimationFrame(stepAvoidance);
+  }
+
+  // Keep mouse pos updated (stage coords)
+  stage.addEventListener("mousemove", (e) => {
+    const s = stage.getBoundingClientRect();
+    mouse.x = e.clientX - s.left;
+    mouse.y = e.clientY - s.top;
+  });
+
+  // Mobile: on touch near stage, set mouse there so it runs away
+  stage.addEventListener("touchmove", (e) => {
+    const s = stage.getBoundingClientRect();
+    const t = e.touches[0];
+    mouse.x = t.clientX - s.left;
+    mouse.y = t.clientY - s.top;
+  }, { passive: true });
+
+  // If they manage to click "No", do nothing (or tease)
+  noBtn.addEventListener("click", () => {
+    // nothing on purpose
+  });
+
+  // ----- Flow transitions -----
   yesBtn.addEventListener("click", () => {
-    card.innerHTML = `
-      <h1>YAY! 🎉</h1>
-      <img src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif">
-      <p>You just made the best decision of your life 😌</p>
-    `;
+    // hide proposal buttons
+    yesBtn.style.display = "none";
+    noBtn.style.display  = "none";
+
+    // show yay
+    yayScreen.classList.add("show");
+
+    // after a short moment, switch to plan
+    setTimeout(() => {
+      yayScreen.classList.remove("show");
+      planScreen.classList.add("show");
+    }, 1600);
+  });
+
+  // Plan page actions
+  document.getElementById("confirmTime").addEventListener("click", () => {
+    openMail(
+      "Valentine date confirmed ✅",
+      `I’m reserving Feb 14, 8:30 PM IST.\n\n– ${nm || "Valentine"}`
+    );
+  });
+
+  document.getElementById("timingIssue").addEventListener("click", () => {
+    openMail(
+      "Valentine timing issue ❌",
+      `8:30 PM IST doesn’t work for me. Let’s decide a different time.\n\nSuggested times (optional):\n- \n- \n\n– ${nm || "Valentine"}`
+    );
+  });
+
+  document.getElementById("cuisineRow").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-cuisine]");
+    if (!btn) return;
+    const cuisine = btn.getAttribute("data-cuisine");
+    openMail(
+      "Valentine cuisine choice 🍽️",
+      `Cuisine I choose: ${cuisine}\n\n(You pick the dish 😌)\n\n– ${nm || "Valentine"}`
+    );
+  });
+
+  document.getElementById("sendDish").addEventListener("click", () => {
+    const txt = document.getElementById("dishText").value.trim();
+    if (!txt) {
+      alert("Type the dish/restaurant first 🙂");
+      return;
+    }
+    openMail(
+      "Valentine exact dish choice 📝",
+      `My exact choice:\n${txt}\n\n– ${nm || "Valentine"}`
+    );
+  });
+
+  // init positions
+  window.addEventListener("resize", () => {
+    placeInitialButtons();
+    initNoPosFromDOM();
+  });
+
+  // First paint
+  requestAnimationFrame(() => {
+    placeInitialButtons();
+    initNoPosFromDOM();
+    requestAnimationFrame(stepAvoidance);
   });
 </script>
-
 </body>
 </html>
