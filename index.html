@@ -417,7 +417,7 @@
     setTimeout(() => {
       yayScreen.classList.remove("show");
       planScreen.classList.add("show");
-    }, 1500);
+    }, 3500);
   });
 
   // ---- One form submit (no email popup) via Formspree ----
@@ -489,13 +489,30 @@
       // Success screen
       const card = document.querySelector(".card");
       card.innerHTML = `
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:26px;">
-          <div style="font-size:48px;font-weight:900;">Sent ✅</div>
-          <div style="margin-top:10px;color:#333;font-size:16px;">
-            Got it. I’ll take it from here 😌💖
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:30px;">
+          <div style="font-size:42px;font-weight:900;">💖 Valentine Dinner Confirmed 💖</div>
+      
+          <div style="margin-top:20px;font-size:16px;color:#333;">
+            📅 February 14 <br>
+            🕣 8:30 PM IST
           </div>
-          <div style="margin-top:10px;color:#666;font-size:13px;">
-            (You can close this tab now.)
+      
+          <div style="margin-top:18px;font-size:16px;color:#333;">
+            🍽 The food will be delivered to your home.
+          </div>
+      
+          <div style="margin-top:18px;font-size:16px;color:#333;">
+            💻 We’ll meet here:
+          </div>
+      
+          <div style="margin-top:8px;font-size:15px;">
+            <a href="https://meet.google.com/bqc-tqtj-uqx" target="_blank" style="color:#ff4d6d;text-decoration:none;font-weight:600;">
+              https://meet.google.com/bqc-tqtj-uqx
+            </a>
+          </div>
+      
+          <div style="margin-top:18px;font-size:13px;color:#666;">
+            I’ll re-share the Meet link on Whatsapp before the call.
           </div>
         </div>
       `;
