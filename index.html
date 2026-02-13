@@ -63,7 +63,7 @@
 
     .subtitle {
       text-align: center;
-      font-size: 13px;
+      font-size: 16px;
       color: var(--muted);
       margin: 0 0 14px;
       user-select: none;
@@ -261,7 +261,9 @@
           <h3>Cuisine</h3>
           <p>
             Pick a cuisine — I’ll handle the rest.
-            <span style="color:#666;">(I’ll pick the dish. Minor risk, maximum romance.)</span>
+            <span style="color:#666;">(I’ll pick the dish. Maybe adventurous, might be something you've not tried
+              before, maximum
+              romance.)</span>
           </p>
 
           <div class="row" id="cuisineRow">
@@ -272,15 +274,6 @@
           </div>
 
           <div style="height:14px;"></div>
-
-          <h3>Preferences & Allergies</h3>
-          <p>
-            One quick question to be safe: Are we feeling adventurous?
-          </p>
-          <div class="row" id="adventureRow">
-            <button class="chip" data-adventure="Safe & Familiar">Stick to comfort food 🏠</button>
-            <button class="chip" data-adventure="Feeling Adventurous">I’d love to try something new! 🧪</button>
-          </div>
 
           <p style="margin-top:12px; font-size:14px; color:#444;">Any allergies or strict "no-no" foods?</p>
           <textarea id="restrictionsText" style="min-height:60px;"
@@ -456,7 +449,7 @@
     });
 
     // ---- One form submit (no email popup) via Formspree ----
-    const state = { time: null, cuisine: null, adventure: null };
+    const state = { time: null, cuisine: null };
 
     function setSelected(groupEl, btn) {
       [...groupEl.querySelectorAll("button")].forEach(b => b.classList.remove("selected"));
@@ -476,14 +469,6 @@
       if (!btn) return;
       state.cuisine = btn.getAttribute("data-cuisine");
       setSelected(document.getElementById("cuisineRow"), btn);
-      statusLine.textContent = "";
-    });
-
-    document.getElementById("adventureRow").addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-adventure]");
-      if (!btn) return;
-      state.adventure = btn.getAttribute("data-adventure");
-      setSelected(document.getElementById("adventureRow"), btn);
       statusLine.textContent = "";
     });
 
@@ -514,7 +499,6 @@
         time_ist: "8:30 PM IST",
         time_status: state.time,     // confirm/issue
         cuisine: state.cuisine || "",
-        adventure: state.adventure || "",
         restrictions: restrictions || "",
         exact_dish: dish || "",
         page: window.location.href
