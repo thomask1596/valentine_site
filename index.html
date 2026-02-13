@@ -273,6 +273,21 @@
 
           <div style="height:14px;"></div>
 
+          <h3>Preferences & Allergies</h3>
+          <p>
+            One quick question to be safe: Are we feeling adventurous?
+          </p>
+          <div class="row" id="adventureRow">
+            <button class="chip" data-adventure="Safe & Familiar">Stick to comfort food 🏠</button>
+            <button class="chip" data-adventure="Feeling Adventurous">I’d love to try something new! 🧪</button>
+          </div>
+
+          <p style="margin-top:12px; font-size:14px; color:#444;">Any allergies or strict "no-no" foods?</p>
+          <textarea id="restrictionsText" style="min-height:60px;"
+            placeholder="e.g. No spicy food, you dont like specific veggies, allergic to peanuts..."></textarea>
+
+          <div style="height:14px;"></div>
+
           <h3>Zero-risk option</h3>
           <p>If you want full control, tell me the exact dish + restaurant (or cravings).</p>
           <textarea id="dishText"
@@ -441,7 +456,7 @@
     });
 
     // ---- One form submit (no email popup) via Formspree ----
-    const state = { time: null, cuisine: null };
+    const state = { time: null, cuisine: null, adventure: null };
 
     function setSelected(groupEl, btn) {
       [...groupEl.querySelectorAll("button")].forEach(b => b.classList.remove("selected"));
@@ -464,8 +479,17 @@
       statusLine.textContent = "";
     });
 
+    document.getElementById("adventureRow").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-adventure]");
+      if (!btn) return;
+      state.adventure = btn.getAttribute("data-adventure");
+      setSelected(document.getElementById("adventureRow"), btn);
+      statusLine.textContent = "";
+    });
+
     document.getElementById("submitAll").addEventListener("click", async () => {
       const dish = document.getElementById("dishText").value.trim();
+      const restrictions = document.getElementById("restrictionsText").value.trim();
 
       if (!FORMSPREE_ENDPOINT || FORMSPREE_ENDPOINT.includes("PASTE_YOUR_FORMSPREE_URL_HERE")) {
         statusLine.textContent = "Samarth: paste your Formspree link into the code first 🙂";
@@ -490,6 +514,8 @@
         time_ist: "8:30 PM IST",
         time_status: state.time,     // confirm/issue
         cuisine: state.cuisine || "",
+        adventure: state.adventure || "",
+        restrictions: restrictions || "",
         exact_dish: dish || "",
         page: window.location.href
       };
