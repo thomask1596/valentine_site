@@ -1,68 +1,75 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Valentine</title>
 
   <style>
-    :root{
-      --bg1:#ffd6e0;
-      --bg2:#ffc2d1;
-      --card:#ffffffee;
-      --text:#1f1f1f;
-      --muted:#666;
-      --yes:#ff4d6d;
-      --yes2:#e93b5b;
+    :root {
+      --bg1: #ffd6e0;
+      --bg2: #ffc2d1;
+      --card: #ffffffee;
+      --text: #1f1f1f;
+      --muted: #666;
+      --yes: #ff4d6d;
+      --yes2: #e93b5b;
 
       /* No-button avoidance feel */
-      --repel-radius: 210;   /* px: start running away earlier */
-      --repel-strength: 2.5; /* bigger = stronger flee */
-      --max-speed: 8.0;      /* px per frame */
+      --repel-radius: 210;
+      /* px: start running away earlier */
+      --repel-strength: 2.5;
+      /* bigger = stronger flee */
+      --max-speed: 8.0;
+      /* px per frame */
     }
 
-    *{ box-sizing:border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-    body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      justify-content:center;
-      align-items:center;
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       background: linear-gradient(135deg, var(--bg1), var(--bg2));
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       padding: 18px;
       color: var(--text);
     }
 
-    .card{
-      width: min(900px, 96vw);
-      height: min(560px, 82vh);
+    .card {
+      width: min(1100px, 98vw);
+      height: min(700px, 90vh);
       background: var(--card);
       backdrop-filter: blur(8px);
       border-radius: 22px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.16);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.16);
       position: relative;
       overflow: hidden;
       padding: 28px 24px 18px;
     }
 
-    .title{
-      text-align:center;
+    .title {
+      text-align: center;
       font-size: clamp(22px, 3.5vw, 34px);
       font-weight: 900;
       letter-spacing: -0.4px;
       margin: 6px 0 6px;
     }
-    .subtitle{
-      text-align:center;
+
+    .subtitle {
+      text-align: center;
       font-size: 13px;
       color: var(--muted);
       margin: 0 0 14px;
-      user-select:none;
+      user-select: none;
     }
 
-    .stage{
+    .stage {
       position: relative;
       width: 100%;
       height: calc(100% - 90px);
@@ -70,123 +77,138 @@
     }
 
     /* Proposal buttons */
-    .btn{
-      position:absolute;
+    .btn {
+      position: absolute;
       padding: 14px 26px;
       font-size: 18px;
       border-radius: 999px;
       border: none;
       cursor: pointer;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.14);
-      user-select:none;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+      user-select: none;
       transition: transform 0.06s ease, background 0.15s ease;
       white-space: nowrap;
     }
-    .btn:active{ transform: scale(0.98); }
 
-    .yes{
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .yes {
       background: var(--yes);
       color: #fff;
     }
-    .yes:hover{ background: var(--yes2); }
 
-    .no{
+    .yes:hover {
+      background: var(--yes2);
+    }
+
+    .no {
       background: #efefef;
       color: #111;
     }
 
     /* Screens (YAY + PLAN) */
-    .screen{
-      position:absolute;
+    .screen {
+      position: absolute;
       inset: 0;
-      display:flex;
+      display: flex;
       flex-direction: column;
-      align-items:center;
-      justify-content:center;
+      align-items: center;
+      justify-content: center;
       gap: 12px;
       opacity: 0;
       transform: translateY(6px);
-      pointer-events:none;
+      pointer-events: none;
       transition: opacity 0.25s ease, transform 0.25s ease;
       padding: 10px 16px;
-      text-align:center;
-    }
-    .screen.show{
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events:auto;
+      text-align: center;
     }
 
-    .big{
+    .screen.show {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .big {
       font-size: 44px;
       font-weight: 900;
       letter-spacing: -0.6px;
       margin: 0;
     }
-    .mid{
+
+    .mid {
       font-size: 16px;
       color: #333;
       margin: 0;
       max-width: 720px;
     }
 
-    .gif{
+    .gif {
       width: min(420px, 90%);
       border-radius: 16px;
-      box-shadow: 0 16px 44px rgba(0,0,0,0.18);
+      box-shadow: 0 16px 44px rgba(0, 0, 0, 0.18);
     }
 
-    .panel{
+    .panel {
       width: min(720px, 92%);
-      background: rgba(255,255,255,0.78);
+      background: rgba(255, 255, 255, 0.78);
       border-radius: 18px;
       padding: 18px 16px;
-      box-shadow: 0 10px 26px rgba(0,0,0,0.10);
-      text-align:left;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.10);
+      text-align: left;
     }
 
-    .panel h3{
+    .panel h3 {
       margin: 0 0 6px;
       font-size: 18px;
     }
-    .panel p{
+
+    .panel p {
       margin: 0 0 10px;
-      color:#444;
+      color: #444;
       font-size: 14px;
       line-height: 1.35;
     }
 
-    .row{
-      display:flex;
+    .row {
+      display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin-top: 10px;
     }
 
-    .chip{
+    .chip {
       border: none;
       border-radius: 999px;
       padding: 10px 14px;
       font-size: 14px;
       cursor: pointer;
-      box-shadow: 0 10px 22px rgba(0,0,0,0.10);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.10);
       background: #fff;
       transition: transform 0.08s ease, outline 0.08s ease, background 0.08s ease;
     }
-    .chip:hover{ transform: translateY(-1px); }
 
-    .chip.selected{
+    .chip:hover {
+      transform: translateY(-1px);
+    }
+
+    .chip.selected {
       outline: 2px solid rgba(255, 77, 109, 0.7);
       transform: translateY(-1px);
     }
 
-    .chip.primarySubmit{
+    .chip.primarySubmit {
       background: #ff4d6d;
-      color:#fff;
+      color: #fff;
     }
-    .chip.primarySubmit:hover{ background:#e93b5b; }
 
-    textarea{
+    .chip.primarySubmit:hover {
+      background: #e93b5b;
+    }
+
+    textarea {
       width: 100%;
       min-height: 90px;
       border-radius: 14px;
@@ -197,7 +219,7 @@
       resize: vertical;
     }
 
-    .smallnote{
+    .smallnote {
       font-size: 12px;
       color: var(--muted);
       margin-top: 8px;
@@ -213,12 +235,11 @@
 
     <div class="stage" id="stage">
       <button class="btn yes" id="yesBtn">Yes 💘</button>
-      <button class="btn no"  id="noBtn">No</button>
+      <button class="btn no" id="noBtn">No</button>
 
       <div class="screen" id="yayScreen">
         <p class="big">YAY! 🎉</p>
-        <img class="gif" alt="mind blown gif"
-             src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif">
+        <img class="gif" alt="mind blown gif" src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif">
         <p class="mid">Okay done. You’re my Valentine now 😌💖</p>
       </div>
 
@@ -226,7 +247,7 @@
         <div class="panel">
           <h3>Plan</h3>
           <p>
-            Valentine dinner date on <b>Feb 14</b> at <b>8:30 PM IST</b>.<br/>
+            Valentine dinner date on <b>Feb 14</b> at <b>8:30 PM IST</b>.<br />
             Please keep that time free.
           </p>
 
@@ -256,7 +277,8 @@
 
           <h3>Zero-risk option</h3>
           <p>If you want full control, tell me the exact dish + restaurant (or cravings).</p>
-          <textarea id="dishText" placeholder="Type here... (e.g., ‘Paneer butter masala + naan’, or ‘Sushi: salmon roll + miso soup’)"></textarea>
+          <textarea id="dishText"
+            placeholder="Type here... (e.g., ‘Paneer butter masala + naan’, or ‘Sushi: salmon roll + miso soup’)"></textarea>
 
           <div class="row">
             <button class="chip primarySubmit" id="submitAll">Submit ✅</button>
@@ -268,227 +290,227 @@
     </div>
   </div>
 
-<script>
-  // ======================
-  // 1) PASTE YOUR FORMSPREE LINK HERE
-  // Example looks like: https://formspree.io/f/abcdwxyz
-  // ======================
-  const FORMSPREE_ENDPOINT = "https://formspree.io/f/xpqjqvan";
+  <script>
+    // ======================
+    // 1) PASTE YOUR FORMSPREE LINK HERE
+    // Example looks like: https://formspree.io/f/abcdwxyz
+    // ======================
+    const FORMSPREE_ENDPOINT = "https://formspree.io/f/xpqjqvan";
 
-  // Optional: name via URL ?name=Vaishnavi
-  const params = new URLSearchParams(location.search);
-  const nm = params.get("name");
-  if (nm) document.getElementById("name").textContent = nm;
+    // Optional: name via URL ?name=Vaishnavi
+    const params = new URLSearchParams(location.search);
+    const nm = params.get("name");
+    if (nm) document.getElementById("name").textContent = nm;
 
-  const stage = document.getElementById("stage");
-  const yesBtn = document.getElementById("yesBtn");
-  const noBtn  = document.getElementById("noBtn");
+    const stage = document.getElementById("stage");
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn = document.getElementById("noBtn");
 
-  const yayScreen  = document.getElementById("yayScreen");
-  const planScreen = document.getElementById("planScreen");
-  const statusLine = document.getElementById("statusLine");
+    const yayScreen = document.getElementById("yayScreen");
+    const planScreen = document.getElementById("planScreen");
+    const statusLine = document.getElementById("statusLine");
 
-  // ---- Place proposal buttons below the title and close together ----
-  function placeInitialButtons() {
-    const s = stage.getBoundingClientRect();
-    const yesW = yesBtn.getBoundingClientRect().width;
-    const noW  = noBtn.getBoundingClientRect().width;
+    // ---- Place proposal buttons below the title and close together ----
+    function placeInitialButtons() {
+      const s = stage.getBoundingClientRect();
+      const yesW = yesBtn.getBoundingClientRect().width;
+      const noW = noBtn.getBoundingClientRect().width;
 
-    const centerX = s.width / 2;
-    const y = s.height * 0.46; // safely below header
+      const centerX = s.width / 2;
+      const y = s.height * 0.46; // safely below header
 
-    const gap = 18;
-    yesBtn.style.left = (centerX - gap/2 - yesW) + "px";
-    yesBtn.style.top  = y + "px";
+      const gap = 18;
+      yesBtn.style.left = (centerX - gap / 2 - yesW) + "px";
+      yesBtn.style.top = y + "px";
 
-    noBtn.style.left  = (centerX + gap/2) + "px";
-    noBtn.style.top   = y + "px";
-  }
-
-  // ---- Smooth avoidance (potential-field-ish) ----
-  let noPos = { x: 0, y: 0 };
-  let mouse = { x: null, y: null };
-  let animOn = true;
-
-  function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
-
-  function syncNoToStyle() {
-    noBtn.style.left = noPos.x + "px";
-    noBtn.style.top  = noPos.y + "px";
-  }
-
-  function initNoPosFromDOM() {
-    const s = stage.getBoundingClientRect();
-    const n = noBtn.getBoundingClientRect();
-    noPos.x = n.left - s.left;
-    noPos.y = n.top  - s.top;
-    syncNoToStyle();
-  }
-
-  function stepAvoidance() {
-    if (!animOn) return;
-  
-    const s = stage.getBoundingClientRect();
-    const n = noBtn.getBoundingClientRect();
-  
-    if (mouse.x === null || mouse.y === null) {
-      requestAnimationFrame(stepAvoidance);
-      return;
+      noBtn.style.left = (centerX + gap / 2) + "px";
+      noBtn.style.top = y + "px";
     }
-  
-    const nx = noPos.x + n.width/2;
-    const ny = noPos.y + n.height/2;
-  
-    const mx = mouse.x;
-    const my = mouse.y;
-  
-    const dx = nx - mx;
-    const dy = ny - my;
-    const dist = Math.hypot(dx, dy);
-  
-    const rootStyle = getComputedStyle(document.documentElement);
-    const R = Number(rootStyle.getPropertyValue("--repel-radius")) || 210;
-    const strength = Number(rootStyle.getPropertyValue("--repel-strength")) || 2.5;
-    const maxSpeed = Number(rootStyle.getPropertyValue("--max-speed")) || 8.0;
-  
-    const panicDistance = Math.max(n.width, n.height) * 0.8;
-  
-    // 🔥 PANIC TELEPORT IF CURSOR ENTERS BUTTON REGION
-    if (dist < panicDistance) {
-      const pad = 20;
-      const maxX = s.width  - n.width  - pad;
-      const maxY = s.height - n.height - pad;
-  
-      noPos.x = Math.random() * (maxX - pad) + pad;
-      noPos.y = Math.random() * (maxY - pad) + pad;
+
+    // ---- Smooth avoidance (potential-field-ish) ----
+    let noPos = { x: 0, y: 0 };
+    let mouse = { x: null, y: null };
+    let animOn = true;
+
+    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+    function syncNoToStyle() {
+      noBtn.style.left = noPos.x + "px";
+      noBtn.style.top = noPos.y + "px";
+    }
+
+    function initNoPosFromDOM() {
+      const s = stage.getBoundingClientRect();
+      const n = noBtn.getBoundingClientRect();
+      noPos.x = n.left - s.left;
+      noPos.y = n.top - s.top;
       syncNoToStyle();
-  
+    }
+
+    function stepAvoidance() {
+      if (!animOn) return;
+
+      const s = stage.getBoundingClientRect();
+      const n = noBtn.getBoundingClientRect();
+
+      if (mouse.x === null || mouse.y === null) {
+        requestAnimationFrame(stepAvoidance);
+        return;
+      }
+
+      const nx = noPos.x + n.width / 2;
+      const ny = noPos.y + n.height / 2;
+
+      const mx = mouse.x;
+      const my = mouse.y;
+
+      const dx = nx - mx;
+      const dy = ny - my;
+      const dist = Math.hypot(dx, dy);
+
+      const rootStyle = getComputedStyle(document.documentElement);
+      const R = Number(rootStyle.getPropertyValue("--repel-radius")) || 210;
+      const strength = Number(rootStyle.getPropertyValue("--repel-strength")) || 2.5;
+      const maxSpeed = Number(rootStyle.getPropertyValue("--max-speed")) || 8.0;
+
+      const panicDistance = Math.max(n.width, n.height) * 0.8;
+
+      // 🔥 PANIC TELEPORT IF CURSOR ENTERS BUTTON REGION
+      if (dist < panicDistance) {
+        const pad = 20;
+        const maxX = s.width - n.width - pad;
+        const maxY = s.height - n.height - pad;
+
+        noPos.x = Math.random() * (maxX - pad) + pad;
+        noPos.y = Math.random() * (maxY - pad) + pad;
+        syncNoToStyle();
+
+        requestAnimationFrame(stepAvoidance);
+        return;
+      }
+
+      let vx = 0, vy = 0;
+
+      if (dist < R && dist > 0.001) {
+        const t = (R - dist) / R;
+        const mag = strength * (t * t) * maxSpeed;
+
+        vx = (dx / dist) * mag;
+        vy = (dy / dist) * mag;
+      }
+
+      if (dist < R * 0.7) {
+        vx += (Math.random() - 0.5) * 1.2;
+        vy += (Math.random() - 0.5) * 1.2;
+      }
+
+      const pad = 10;
+      const maxX = s.width - n.width - pad;
+      const maxY = s.height - n.height - pad;
+
+      noPos.x = Math.max(pad, Math.min(noPos.x + vx, maxX));
+      noPos.y = Math.max(pad, Math.min(noPos.y + vy, maxY));
+
+      syncNoToStyle();
       requestAnimationFrame(stepAvoidance);
-      return;
-    }
-  
-    let vx = 0, vy = 0;
-  
-    if (dist < R && dist > 0.001) {
-      const t = (R - dist) / R;
-      const mag = strength * (t * t) * maxSpeed;
-  
-      vx = (dx / dist) * mag;
-      vy = (dy / dist) * mag;
-    }
-  
-    if (dist < R * 0.7) {
-      vx += (Math.random() - 0.5) * 1.2;
-      vy += (Math.random() - 0.5) * 1.2;
-    }
-  
-    const pad = 10;
-    const maxX = s.width  - n.width  - pad;
-    const maxY = s.height - n.height - pad;
-  
-    noPos.x = Math.max(pad, Math.min(noPos.x + vx, maxX));
-    noPos.y = Math.max(pad, Math.min(noPos.y + vy, maxY));
-  
-    syncNoToStyle();
-    requestAnimationFrame(stepAvoidance);
-  }
-
-
-  stage.addEventListener("mousemove", (e) => {
-    const s = stage.getBoundingClientRect();
-    mouse.x = e.clientX - s.left;
-    mouse.y = e.clientY - s.top;
-  });
-
-  stage.addEventListener("touchmove", (e) => {
-    const s = stage.getBoundingClientRect();
-    const t = e.touches[0];
-    mouse.x = t.clientX - s.left;
-    mouse.y = t.clientY - s.top;
-  }, { passive: true });
-
-  // ---- Flow transitions ----
-  yesBtn.addEventListener("click", () => {
-    yesBtn.style.display = "none";
-    noBtn.style.display  = "none";
-
-    yayScreen.classList.add("show");
-
-    setTimeout(() => {
-      yayScreen.classList.remove("show");
-      planScreen.classList.add("show");
-    }, 3500);
-  });
-
-  // ---- One form submit (no email popup) via Formspree ----
-  const state = { time: null, cuisine: null };
-
-  function setSelected(groupEl, btn) {
-    [...groupEl.querySelectorAll("button")].forEach(b => b.classList.remove("selected"));
-    btn.classList.add("selected");
-  }
-
-  document.getElementById("timeRow").addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-time]");
-    if (!btn) return;
-    state.time = btn.getAttribute("data-time"); // confirm / issue
-    setSelected(document.getElementById("timeRow"), btn);
-    statusLine.textContent = "";
-  });
-
-  document.getElementById("cuisineRow").addEventListener("click", (e) => {
-    const btn = e.target.closest("button[data-cuisine]");
-    if (!btn) return;
-    state.cuisine = btn.getAttribute("data-cuisine");
-    setSelected(document.getElementById("cuisineRow"), btn);
-    statusLine.textContent = "";
-  });
-
-  document.getElementById("submitAll").addEventListener("click", async () => {
-    const dish = document.getElementById("dishText").value.trim();
-
-    if (!FORMSPREE_ENDPOINT || FORMSPREE_ENDPOINT.includes("PASTE_YOUR_FORMSPREE_URL_HERE")) {
-      statusLine.textContent = "Samarth: paste your Formspree link into the code first 🙂";
-      return;
     }
 
-    if (!state.time) {
-      statusLine.textContent = "Pick whether 8:30 works (or doesn’t).";
-      return;
+
+    stage.addEventListener("mousemove", (e) => {
+      const s = stage.getBoundingClientRect();
+      mouse.x = e.clientX - s.left;
+      mouse.y = e.clientY - s.top;
+    });
+
+    stage.addEventListener("touchmove", (e) => {
+      const s = stage.getBoundingClientRect();
+      const t = e.touches[0];
+      mouse.x = t.clientX - s.left;
+      mouse.y = t.clientY - s.top;
+    }, { passive: true });
+
+    // ---- Flow transitions ----
+    yesBtn.addEventListener("click", () => {
+      yesBtn.style.display = "none";
+      noBtn.style.display = "none";
+
+      yayScreen.classList.add("show");
+
+      setTimeout(() => {
+        yayScreen.classList.remove("show");
+        planScreen.classList.add("show");
+      }, 3500);
+    });
+
+    // ---- One form submit (no email popup) via Formspree ----
+    const state = { time: null, cuisine: null };
+
+    function setSelected(groupEl, btn) {
+      [...groupEl.querySelectorAll("button")].forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
     }
 
-    if (!state.cuisine && !dish) {
-      statusLine.textContent = "Pick a cuisine OR type the exact dish.";
-      return;
-    }
+    document.getElementById("timeRow").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-time]");
+      if (!btn) return;
+      state.time = btn.getAttribute("data-time"); // confirm / issue
+      setSelected(document.getElementById("timeRow"), btn);
+      statusLine.textContent = "";
+    });
 
-    statusLine.textContent = "Submitting…";
+    document.getElementById("cuisineRow").addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-cuisine]");
+      if (!btn) return;
+      state.cuisine = btn.getAttribute("data-cuisine");
+      setSelected(document.getElementById("cuisineRow"), btn);
+      statusLine.textContent = "";
+    });
 
-    const payload = {
-      name: nm || document.getElementById("name").textContent || "Valentine",
-      date: "Feb 14",
-      time_ist: "8:30 PM IST",
-      time_status: state.time,     // confirm/issue
-      cuisine: state.cuisine || "",
-      exact_dish: dish || "",
-      page: window.location.href
-    };
+    document.getElementById("submitAll").addEventListener("click", async () => {
+      const dish = document.getElementById("dishText").value.trim();
 
-    try {
-      const res = await fetch(FORMSPREE_ENDPOINT, {
-        method: "POST",
-        headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
-      });
+      if (!FORMSPREE_ENDPOINT || FORMSPREE_ENDPOINT.includes("PASTE_YOUR_FORMSPREE_URL_HERE")) {
+        statusLine.textContent = "Samarth: paste your Formspree link into the code first 🙂";
+        return;
+      }
 
-      if (!res.ok) throw new Error("submit failed");
+      if (!state.time) {
+        statusLine.textContent = "Pick whether 8:30 works (or doesn’t).";
+        return;
+      }
 
-      // Success screen
-      const card = document.querySelector(".card");
-      card.innerHTML = `
+      if (!state.cuisine && !dish) {
+        statusLine.textContent = "Pick a cuisine OR type the exact dish.";
+        return;
+      }
+
+      statusLine.textContent = "Submitting…";
+
+      const payload = {
+        name: nm || document.getElementById("name").textContent || "Valentine",
+        date: "Feb 14",
+        time_ist: "8:30 PM IST",
+        time_status: state.time,     // confirm/issue
+        cuisine: state.cuisine || "",
+        exact_dish: dish || "",
+        page: window.location.href
+      };
+
+      try {
+        const res = await fetch(FORMSPREE_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error("submit failed");
+
+        // Success screen
+        const card = document.querySelector(".card");
+        card.innerHTML = `
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:30px;">
           <div style="font-size:42px;font-weight:900;">💖 Valentine Dinner Confirmed 💖</div>
       
@@ -516,22 +538,23 @@
           </div>
         </div>
       `;
-    } catch (err) {
-      statusLine.textContent = "Submit failed. Try again (adblocker can block it sometimes).";
-    }
-  });
+      } catch (err) {
+        statusLine.textContent = "Submit failed. Try again (adblocker can block it sometimes).";
+      }
+    });
 
-  // init
-  window.addEventListener("resize", () => {
-    placeInitialButtons();
-    initNoPosFromDOM();
-  });
+    // init
+    window.addEventListener("resize", () => {
+      placeInitialButtons();
+      initNoPosFromDOM();
+    });
 
-  requestAnimationFrame(() => {
-    placeInitialButtons();
-    initNoPosFromDOM();
-    requestAnimationFrame(stepAvoidance);
-  });
-</script>
+    requestAnimationFrame(() => {
+      placeInitialButtons();
+      initNoPosFromDOM();
+      requestAnimationFrame(stepAvoidance);
+    });
+  </script>
 </body>
+
 </html>
