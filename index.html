@@ -14,7 +14,7 @@
       --muted:#666;
       --accent:#ff4d6d;
       --accent2:#e93b5b;
-      --bad:#e11d48;      /* red */
+      --bad:#e11d48;
       --border:#e7e7e7;
       --shadow: 0 18px 55px rgba(0,0,0,.14);
       --radius: 22px;
@@ -32,6 +32,7 @@
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       color:var(--text);
       background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      overflow-x:hidden;
     }
 
     .card{
@@ -42,6 +43,7 @@
       box-shadow: var(--shadow);
       padding: 22px 18px;
       overflow:hidden;
+      position: relative;
     }
 
     .screen{
@@ -73,28 +75,20 @@
       justify-content:center;
     }
 
-    /* 8 boxes:
-       - phone: 2 rows of 4
-       - desktop: 1 row of 8
-    */
+    /* Always 8 in one row (phone-friendly: auto-shrinks) */
     .inputs{
       display:grid;
-      grid-template-columns: repeat(4, 54px);
-      gap: 10px;
+      grid-template-columns: repeat(8, minmax(34px, 1fr));
+      gap: 8px;
+      width: min(520px, 100%);
       justify-content:center;
       align-items:center;
       user-select:none;
     }
 
-    @media (min-width: 560px){
-      .inputs{
-        grid-template-columns: repeat(8, 54px);
-      }
-    }
-
     .box{
-      width:54px;
-      height:60px;
+      width:100%;
+      height:56px;
       border-radius: 14px;
       border: 1.5px solid var(--border);
       background: #fff;
@@ -116,6 +110,12 @@
       border-color: rgba(225, 29, 72, .75);
       color: var(--bad);
       box-shadow: 0 12px 26px rgba(225, 29, 72, .12);
+    }
+
+    /* Slightly smaller on very narrow phones */
+    @media (max-width: 380px){
+      .inputs{ gap: 6px; }
+      .box{ height: 52px; font-size: 20px; border-radius: 12px; }
     }
 
     .rowBtns{
@@ -194,13 +194,23 @@
       color: var(--muted);
     }
 
-    /* Reveal screen */
+    /* Reveal screen layout changes */
+    #revealScreen{
+      position: relative;
+      padding-top: 10px;
+    }
+
+    .revealTitle{
+      font-size: clamp(34px, 7.2vw, 54px);
+      margin: 6px 0 0;
+    }
+
     .poem{
-      margin: 14px auto 0;
-      max-width: 620px;
+      margin: 34px auto 0; /* bigger gap from title */
+      max-width: 640px;
       background: rgba(255,255,255,.7);
       border-radius: 18px;
-      padding: 16px 14px;
+      padding: 18px 14px;
       box-shadow: 0 12px 26px rgba(0,0,0,.10);
       text-align:center;
       font-size: clamp(16px, 4.3vw, 18px);
@@ -209,7 +219,12 @@
       white-space: pre-line;
     }
 
-    /* Shake animation for wrong attempt */
+    .stretchMiss{
+      font-weight: 900;
+      letter-spacing: 0.5px;
+    }
+
+    /* Shake */
     @keyframes shake {
       0%{ transform: translateX(0); }
       20%{ transform: translateX(-8px); }
@@ -218,16 +233,46 @@
       80%{ transform: translateX(6px); }
       100%{ transform: translateX(0); }
     }
-    .shake{
-      animation: shake .28s ease-in-out;
+    .shake{ animation: shake .28s ease-in-out; }
+
+    /* Floating hearts layer */
+    .heartsLayer{
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 9999;
+    }
+    .heart{
+      position: absolute;
+      bottom: -40px;
+      will-change: transform, opacity;
+      animation: floatUp linear forwards;
+      filter: drop-shadow(0 10px 12px rgba(0,0,0,.10));
+      opacity: 0.95;
+      user-select:none;
+    }
+    @keyframes floatUp{
+      0%{
+        transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+        opacity: 0;
+      }
+      10%{ opacity: 1; }
+      100%{
+        transform: translateY(-110vh) translateX(var(--drift, 0px)) rotate(var(--rot, 0deg)) scale(var(--scale, 1));
+        opacity: 0;
+      }
     }
   </style>
 </head>
 
 <body>
+  <div class="heartsLayer" id="heartsLayer"></div>
+
   <div class="card">
     <!-- PUZZLE SCREEN -->
     <div class="screen show" id="puzzleScreen">
+      <h1>To see the message...</h1>
       <h1>Enter the password</h1>
       <div class="sub">8 letters. One tiny puzzle. Unlock it 🙂</div>
 
@@ -273,12 +318,14 @@
 
     <!-- REVEAL SCREEN -->
     <div class="screen" id="revealScreen">
-      <h1>I hate long distance.</h1>
+      <h1 class="revealTitle">I hate long distance.</h1>
       <div class="poem">
 This past week just flew,
 Days felt quieter without you.
 No big speech, nothing new —
-I just want to say I miss you.
+I just want to say...
+
+<span class="stretchMiss">I-M-I-S-S-S-S-Y-O-O-O-U-U-U-U-U</span>
       </div>
     </div>
   </div>
@@ -294,6 +341,7 @@ I just want to say I miss you.
     const note = document.getElementById("note");
     const inputsWrap = document.getElementById("inputs");
     const boxes = [...document.querySelectorAll(".box")];
+    const heartsLayer = document.getElementById("heartsLayer");
 
     // Focus first box on load
     requestAnimationFrame(() => boxes[0].focus());
@@ -302,10 +350,6 @@ I just want to say I miss you.
       if (!ch) return "";
       const c = ch.trim().toUpperCase();
       return (c.length ? c[0] : "");
-    }
-
-    function getAttempt(){
-      return boxes.map(b => normalizeChar(b.value)).join("");
     }
 
     function clearMarks(){
@@ -326,7 +370,6 @@ I just want to say I miss you.
       const attemptArr = boxes.map(b => normalizeChar(b.value));
       const answerArr = ANSWER.split("");
 
-      // Require all filled
       if (attemptArr.some(x => x === "")){
         note.textContent = "Fill all 8 letters 🙂";
         inputsWrap.classList.add("shake");
@@ -350,19 +393,60 @@ I just want to say I miss you.
       return ok;
     }
 
+    // ===== Hearts animation =====
+    let heartsTimer = null;
+
+    function spawnHeart(){
+      const el = document.createElement("div");
+      el.className = "heart";
+      const hearts = ["💖","💗","💘","💞","❤️","💕"];
+      el.textContent = hearts[Math.floor(Math.random()*hearts.length)];
+
+      const x = Math.random() * 100; // vw percent
+      const size = 16 + Math.random() * 22; // px
+      const dur = 2.8 + Math.random() * 2.2; // seconds
+      const drift = (Math.random() - 0.5) * 180; // px
+      const rot = (Math.random() - 0.5) * 90; // deg
+      const scale = 0.85 + Math.random() * 0.7;
+
+      el.style.left = x + "vw";
+      el.style.fontSize = size + "px";
+      el.style.animationDuration = dur + "s";
+      el.style.setProperty("--drift", drift + "px");
+      el.style.setProperty("--rot", rot + "deg");
+      el.style.setProperty("--scale", scale);
+
+      heartsLayer.appendChild(el);
+      el.addEventListener("animationend", () => el.remove());
+    }
+
+    function startHearts(){
+      if (heartsTimer) return;
+      // burst
+      for (let i = 0; i < 14; i++) setTimeout(spawnHeart, i * 70);
+      heartsTimer = setInterval(spawnHeart, 220);
+    }
+
+    function stopHearts(){
+      if (!heartsTimer) return;
+      clearInterval(heartsTimer);
+      heartsTimer = null;
+      // let existing hearts finish naturally
+    }
+
     function unlock(){
       if (!validate()) return;
-      // Transition
+
       puzzleScreen.classList.remove("show");
       revealScreen.classList.add("show");
       window.scrollTo({ top: 0, behavior: "smooth" });
+      startHearts();
     }
 
-    // Button actions
     unlockBtn.addEventListener("click", unlock);
     resetBtn.addEventListener("click", resetAll);
 
-    // Enter key triggers unlock from any box
+    // Enter triggers unlock
     boxes.forEach((b) => {
       b.addEventListener("keydown", (e) => {
         if (e.key === "Enter"){
@@ -372,7 +456,7 @@ I just want to say I miss you.
       });
     });
 
-    // Auto-advance + backspace behavior (mobile friendly)
+    // Auto-advance + backspace + letters-only
     boxes.forEach((box, idx) => {
       box.addEventListener("input", () => {
         clearMarks();
@@ -389,20 +473,15 @@ I just want to say I miss you.
           clearMarks();
           if (box.value === "" && idx > 0){
             boxes[idx - 1].focus();
-            // leave previous value as-is; user can backspace again to clear it
           }
         }
 
-        // Allow letters only (block numbers/symbols)
         if (e.key.length === 1){
           const isLetter = /^[a-zA-Z]$/.test(e.key);
-          if (!isLetter){
-            e.preventDefault();
-          }
+          if (!isLetter) e.preventDefault();
         }
       });
 
-      // Paste support: if user pastes "DISTANCE", spread across boxes
       box.addEventListener("paste", (e) => {
         e.preventDefault();
         clearMarks();
@@ -418,6 +497,9 @@ I just want to say I miss you.
         (firstEmpty === -1 ? boxes[7] : boxes[firstEmpty]).focus();
       });
     });
+
+    // If user resets after reveal (optional), stop hearts too
+    resetBtn.addEventListener("click", stopHearts);
   </script>
 </body>
 </html>
