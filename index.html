@@ -1,574 +1,423 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Valentine</title>
+  <title>Unlock</title>
 
   <style>
-    :root {
-      --bg1: #ffd6e0;
-      --bg2: #ffc2d1;
-      --card: #ffffffee;
-      --text: #1f1f1f;
-      --muted: #666;
-      --yes: #ff4d6d;
-      --yes2: #e93b5b;
-
-      /* No-button avoidance feel */
-      --repel-radius: 210;
-      /* px: start running away earlier */
-      --repel-strength: 2.5;
-      /* bigger = stronger flee */
-      --max-speed: 8.0;
-      /* px per frame */
+    :root{
+      --bg1:#fff1f4;
+      --bg2:#fde7ef;
+      --card:#ffffffee;
+      --text:#1f1f1f;
+      --muted:#666;
+      --accent:#ff4d6d;
+      --accent2:#e93b5b;
+      --bad:#e11d48;      /* red */
+      --border:#e7e7e7;
+      --shadow: 0 18px 55px rgba(0,0,0,.14);
+      --radius: 22px;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    *{ box-sizing:border-box; }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      padding: 18px;
-      color: var(--text);
+      color:var(--text);
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
     }
 
-    .card {
-      width: min(1100px, 98vw);
-      height: min(700px, 90vh);
-      background: var(--card);
+    .card{
+      width:min(760px, 96vw);
+      background:var(--card);
       backdrop-filter: blur(8px);
-      border-radius: 22px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.16);
-      position: relative;
-      overflow: hidden;
-      padding: 28px 24px 18px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px 18px;
+      overflow:hidden;
     }
 
-    .title {
-      text-align: center;
-      font-size: clamp(22px, 3.5vw, 34px);
+    .screen{
+      display:none;
+      text-align:center;
+      padding: 8px 6px;
+    }
+    .screen.show{ display:block; }
+
+    h1{
+      margin: 6px 0 8px;
+      font-size: clamp(26px, 6vw, 40px);
+      letter-spacing:-0.6px;
+      line-height:1.05;
       font-weight: 900;
-      letter-spacing: -0.4px;
-      margin: 6px 0 6px;
     }
 
-    .subtitle {
-      text-align: center;
-      font-size: 16px;
+    .sub{
+      margin: 0 auto 16px;
+      max-width: 640px;
       color: var(--muted);
-      margin: 0 0 14px;
-      user-select: none;
-    }
-
-    .stage {
-      position: relative;
-      width: 100%;
-      height: calc(100% - 90px);
-      border-radius: 16px;
-    }
-
-    /* Proposal buttons */
-    .btn {
-      position: absolute;
-      padding: 14px 26px;
-      font-size: 18px;
-      border-radius: 999px;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
-      user-select: none;
-      transition: transform 0.06s ease, background 0.15s ease;
-      white-space: nowrap;
-    }
-
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .yes {
-      background: var(--yes);
-      color: #fff;
-    }
-
-    .yes:hover {
-      background: var(--yes2);
-    }
-
-    .no {
-      background: #efefef;
-      color: #111;
-    }
-
-    /* Screens (YAY + PLAN) */
-    .screen {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      opacity: 0;
-      transform: translateY(6px);
-      pointer-events: none;
-      transition: opacity 0.25s ease, transform 0.25s ease;
-      padding: 10px 16px;
-      text-align: center;
-    }
-
-    .screen.show {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-
-    .big {
-      font-size: 44px;
-      font-weight: 900;
-      letter-spacing: -0.6px;
-      margin: 0;
-    }
-
-    .mid {
-      font-size: 16px;
-      color: #333;
-      margin: 0;
-      max-width: 720px;
-    }
-
-    .gif {
-      width: min(420px, 90%);
-      border-radius: 16px;
-      box-shadow: 0 16px 44px rgba(0, 0, 0, 0.18);
-    }
-
-    .panel {
-      width: min(720px, 92%);
-      background: rgba(255, 255, 255, 0.78);
-      border-radius: 18px;
-      padding: 18px 16px;
-      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.10);
-      text-align: left;
-    }
-
-    .panel h3 {
-      margin: 0 0 6px;
-      font-size: 18px;
-    }
-
-    .panel p {
-      margin: 0 0 10px;
-      color: #444;
-      font-size: 14px;
+      font-size: clamp(15px, 3.8vw, 17px);
       line-height: 1.35;
     }
 
-    .row {
-      display: flex;
-      flex-wrap: wrap;
+    .inputsWrap{
+      margin-top: 14px;
+      display:flex;
+      justify-content:center;
+    }
+
+    /* 8 boxes:
+       - phone: 2 rows of 4
+       - desktop: 1 row of 8
+    */
+    .inputs{
+      display:grid;
+      grid-template-columns: repeat(4, 54px);
       gap: 10px;
-      margin-top: 10px;
+      justify-content:center;
+      align-items:center;
+      user-select:none;
     }
 
-    .chip {
-      border: none;
-      border-radius: 999px;
-      padding: 10px 14px;
-      font-size: 14px;
-      cursor: pointer;
-      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.10);
-      background: #fff;
-      transition: transform 0.08s ease, outline 0.08s ease, background 0.08s ease;
+    @media (min-width: 560px){
+      .inputs{
+        grid-template-columns: repeat(8, 54px);
+      }
     }
 
-    .chip:hover {
-      transform: translateY(-1px);
-    }
-
-    .chip.selected {
-      outline: 2px solid rgba(255, 77, 109, 0.7);
-      transform: translateY(-1px);
-    }
-
-    .chip.primarySubmit {
-      background: #ff4d6d;
-      color: #fff;
-    }
-
-    .chip.primarySubmit:hover {
-      background: #e93b5b;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 90px;
+    .box{
+      width:54px;
+      height:60px;
       border-radius: 14px;
-      border: 1px solid #ddd;
-      padding: 10px 12px;
-      font-size: 14px;
-      outline: none;
-      resize: vertical;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      text-align:center;
+      font-size: 22px;
+      font-weight: 800;
+      outline:none;
+      box-shadow: 0 10px 22px rgba(0,0,0,.07);
+      transition: transform .06s ease, border-color .12s ease, box-shadow .12s ease, color .12s ease;
+      text-transform: uppercase;
+      caret-color: transparent;
+    }
+    .box:focus{
+      border-color: rgba(255, 77, 109, .55);
+      box-shadow: 0 12px 26px rgba(0,0,0,.10);
+      transform: translateY(-1px);
+    }
+    .box.wrong{
+      border-color: rgba(225, 29, 72, .75);
+      color: var(--bad);
+      box-shadow: 0 12px 26px rgba(225, 29, 72, .12);
     }
 
-    .smallnote {
-      font-size: 12px;
+    .rowBtns{
+      margin-top: 16px;
+      display:flex;
+      gap: 10px;
+      justify-content:center;
+      flex-wrap: wrap;
+    }
+
+    .btn{
+      border:none;
+      border-radius: 999px;
+      padding: 13px 20px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor:pointer;
+      user-select:none;
+      box-shadow: 0 12px 26px rgba(0,0,0,.12);
+      transition: transform .06s ease, background .15s ease;
+    }
+    .btn:active{ transform: scale(.985); }
+
+    .primary{
+      background: var(--accent);
+      color:#fff;
+    }
+    .primary:hover{ background: var(--accent2); }
+
+    .secondary{
+      background:#fff;
+      color:#222;
+      border: 1px solid var(--border);
+    }
+
+    .note{
+      margin-top: 10px;
+      min-height: 20px;
+      font-size: 13px;
       color: var(--muted);
-      margin-top: 8px;
-      min-height: 16px;
+    }
+
+    details{
+      margin: 18px auto 0;
+      max-width: 680px;
+      text-align:left;
+      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(0,0,0,.05);
+      border-radius: 18px;
+      padding: 12px 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,.08);
+    }
+    summary{
+      cursor:pointer;
+      font-weight: 900;
+      font-size: 15px;
+      list-style:none;
+      user-select:none;
+    }
+    summary::-webkit-details-marker{ display:none; }
+
+    .hintText{
+      margin-top: 10px;
+      color:#333;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .hintText ol{
+      margin: 8px 0 0 18px;
+      padding:0;
+    }
+    .hintText li{
+      margin: 8px 0;
+    }
+    .muted{
+      color: var(--muted);
+    }
+
+    /* Reveal screen */
+    .poem{
+      margin: 14px auto 0;
+      max-width: 620px;
+      background: rgba(255,255,255,.7);
+      border-radius: 18px;
+      padding: 16px 14px;
+      box-shadow: 0 12px 26px rgba(0,0,0,.10);
+      text-align:center;
+      font-size: clamp(16px, 4.3vw, 18px);
+      line-height: 1.55;
+      color:#222;
+      white-space: pre-line;
+    }
+
+    /* Shake animation for wrong attempt */
+    @keyframes shake {
+      0%{ transform: translateX(0); }
+      20%{ transform: translateX(-8px); }
+      40%{ transform: translateX(8px); }
+      60%{ transform: translateX(-6px); }
+      80%{ transform: translateX(6px); }
+      100%{ transform: translateX(0); }
+    }
+    .shake{
+      animation: shake .28s ease-in-out;
     }
   </style>
 </head>
 
 <body>
   <div class="card">
-    <div class="title"><span id="name">Vaishnavi!!!!</span> Will you be my Valentine? 💖</div>
-    <div class="subtitle">Try clicking “No”. I dare you.</div>
+    <!-- PUZZLE SCREEN -->
+    <div class="screen show" id="puzzleScreen">
+      <h1>Enter the password</h1>
+      <div class="sub">8 letters. One tiny puzzle. Unlock it 🙂</div>
 
-    <div class="stage" id="stage">
-      <button class="btn yes" id="yesBtn">Yes 💘</button>
-      <button class="btn no" id="noBtn">No</button>
-
-      <div class="screen" id="yayScreen">
-        <p class="big">YAY! 🎉</p>
-        <p class="big">Okay done. You’re my Valentine now 😌💖</p>
-        <img class="gif" alt="mind blown gif" src="https://media.giphy.com/media/26ufdipQqU2lhNA4g/giphy.gif">
+      <div class="inputsWrap">
+        <div class="inputs" id="inputs">
+          <input class="box" inputmode="text" maxlength="1" aria-label="letter 1" />
+          <input class="box" inputmode="text" maxlength="1" aria-label="letter 2" />
+          <input class="box" inputmode="text" maxlength="1" aria-label="letter 3" />
+          <input class="box" inputmode="text" maxlength="1" aria-label="letter 4" />
+          <input class="box" inputmode="text" maxlength="1" aria-label="letter 5" />
+          <input class="box" inputmode="text" maxlength="1" aria-label="letter 6" />
+          <input class="box" inputmode="text" maxlength="1" aria-label="letter 7" />
+          <input class="box" inputmode="text" maxlength="1" aria-label="letter 8" />
+        </div>
       </div>
 
-      <div class="screen" id="planScreen">
-        <div class="panel">
-          <h3>Plan</h3>
-          <p>
-            Valentine dinner date on <b>Feb 14</b> at <b>8:30 PM IST</b>.<br />
-            Please keep that time free.
-          </p>
+      <div class="rowBtns">
+        <button class="btn primary" id="unlockBtn">Unlock 🔓</button>
+        <button class="btn secondary" id="resetBtn">Reset</button>
+      </div>
 
-          <div class="row" id="timeRow">
-            <button class="chip" data-time="confirm">✅ 8:30 works</button>
-            <button class="chip" data-time="issue">❌ 8:30 won’t work (call me to change)</button>
-          </div>
+      <div class="note" id="note" aria-live="polite"></div>
 
-          <div style="height:14px;"></div>
-
-          <h3>Cuisine</h3>
-          <p>
-            Pick a cuisine — I’ll handle the rest.
-            <span style="color:#666;">(I’ll pick the dish. Maybe adventurous, might be something you've not tried
-              before, maximum romance.)</span>
-          </p>
-
-          <div class="row" id="cuisineRow">
-            <button class="chip" data-cuisine="Surprise me 🎲">Surprise me 🎲</button>
-            <button class="chip" data-cuisine="Italian">Italian</button>
-            <button class="chip" data-cuisine="Thai">Thai</button>
-            <button class="chip" data-cuisine="Continental">Continental</button>
-          </div>
-
-          <div style="height:14px;"></div>
-
-          <p style="margin-top:12px; font-size:14px; color:#444;">Any allergies or strict "no-no" foods?</p>
-          <textarea id="restrictionsText" style="min-height:60px;"
-            placeholder="e.g. No spicy food, you dont like specific veggies, allergic to peanuts..."></textarea>
-
-          <div style="height:14px;"></div>
-
-          <h3>Zero-risk option</h3>
-          <p>If you want full control, tell me the exact dish + restaurant (or cravings).</p>
-          <textarea id="dishText"
-            placeholder="Type here... (e.g., ‘Pasta’, or ‘Paneer butter masala + naan’)"></textarea>
-
-          <div class="row">
-            <button class="chip primarySubmit" id="submitAll">Submit ✅</button>
-          </div>
-
-          <div class="smallnote" id="statusLine"></div>
+      <details open>
+        <summary>Hint</summary>
+        <div class="hintText">
+          <div class="muted">Solve the clues. Take the <b>first letter</b> of each answer.</div>
+          <ol>
+            <li>🎵 Who’s the hottest girl in the world?<br>
+              My ___ girl, my ___ girl 🎵</li>
+            <li>The app where all your favorite reels live</li>
+            <li>A three-letter word we’ll be doing a lot after marriage 😉😉</li>
+            <li>The café where we went on our first date</li>
+            <li>The grade I’m hoping you give this little effort</li>
+            <li>Your last message to me on WhatsApp</li>
+            <li>The first gift I gave you<br>
+              <span class="muted">(I know it’s two words — you’ll know which word to pick from the other clues)</span></li>
+            <li>The direction I’d travel to reach you the fastest</li>
+          </ol>
         </div>
+      </details>
+    </div>
+
+    <!-- REVEAL SCREEN -->
+    <div class="screen" id="revealScreen">
+      <h1>I hate long distance.</h1>
+      <div class="poem">
+This past week just flew,
+Days felt quieter without you.
+No big speech, nothing new —
+I just want to say I miss you.
       </div>
     </div>
   </div>
 
   <script>
-    // ======================
-    // 1) PASTE YOUR FORMSPREE LINK HERE
-    // Example looks like: https://formspree.io/f/abcdwxyz
-    // ======================
-    const FORMSPREE_ENDPOINT = "https://formspree.io/f/xpqjqvan";
+    // ======= CONFIG =======
+    const ANSWER = "DISTANCE";
 
-    // Optional: name via URL ?name=Vaishnavi
-    const params = new URLSearchParams(location.search);
-    const nm = params.get("name");
-    if (nm) document.getElementById("name").textContent = nm;
+    const puzzleScreen = document.getElementById("puzzleScreen");
+    const revealScreen = document.getElementById("revealScreen");
+    const unlockBtn = document.getElementById("unlockBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const note = document.getElementById("note");
+    const inputsWrap = document.getElementById("inputs");
+    const boxes = [...document.querySelectorAll(".box")];
 
-    const stage = document.getElementById("stage");
-    const yesBtn = document.getElementById("yesBtn");
-    const noBtn = document.getElementById("noBtn");
+    // Focus first box on load
+    requestAnimationFrame(() => boxes[0].focus());
 
-    const yayScreen = document.getElementById("yayScreen");
-    const planScreen = document.getElementById("planScreen");
-    const statusLine = document.getElementById("statusLine");
-
-    // ---- Place proposal buttons below the title and close together ----
-    function placeInitialButtons() {
-      const s = stage.getBoundingClientRect();
-      const yesW = yesBtn.getBoundingClientRect().width;
-      const noW = noBtn.getBoundingClientRect().width;
-
-      const centerX = s.width / 2;
-      const y = s.height * 0.46; // safely below header
-
-      const gap = 18;
-      yesBtn.style.left = (centerX - gap / 2 - yesW) + "px";
-      yesBtn.style.top = y + "px";
-
-      noBtn.style.left = (centerX + gap / 2) + "px";
-      noBtn.style.top = y + "px";
+    function normalizeChar(ch){
+      if (!ch) return "";
+      const c = ch.trim().toUpperCase();
+      return (c.length ? c[0] : "");
     }
 
-    // ---- Smooth avoidance (potential-field-ish) ----
-    let noPos = { x: 0, y: 0 };
-    let mouse = { x: null, y: null };
-    let animOn = true;
-
-    function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
-
-    function syncNoToStyle() {
-      noBtn.style.left = noPos.x + "px";
-      noBtn.style.top = noPos.y + "px";
+    function getAttempt(){
+      return boxes.map(b => normalizeChar(b.value)).join("");
     }
 
-    function initNoPosFromDOM() {
-      const s = stage.getBoundingClientRect();
-      const n = noBtn.getBoundingClientRect();
-      noPos.x = n.left - s.left;
-      noPos.y = n.top - s.top;
-      syncNoToStyle();
+    function clearMarks(){
+      boxes.forEach(b => b.classList.remove("wrong"));
+      inputsWrap.classList.remove("shake");
     }
 
-    function stepAvoidance() {
-      if (!animOn) return;
-
-      const s = stage.getBoundingClientRect();
-      const n = noBtn.getBoundingClientRect();
-
-      if (mouse.x === null || mouse.y === null) {
-        requestAnimationFrame(stepAvoidance);
-        return;
-      }
-
-      const nx = noPos.x + n.width / 2;
-      const ny = noPos.y + n.height / 2;
-
-      const mx = mouse.x;
-      const my = mouse.y;
-
-      const dx = nx - mx;
-      const dy = ny - my;
-      const dist = Math.hypot(dx, dy);
-
-      const rootStyle = getComputedStyle(document.documentElement);
-      const R = Number(rootStyle.getPropertyValue("--repel-radius")) || 210;
-      const strength = Number(rootStyle.getPropertyValue("--repel-strength")) || 2.5;
-      const maxSpeed = Number(rootStyle.getPropertyValue("--max-speed")) || 8.0;
-
-      const panicDistance = Math.max(n.width, n.height) * 0.8;
-
-      // 🔥 PANIC TELEPORT IF CURSOR ENTERS BUTTON REGION
-      if (dist < panicDistance) {
-        const pad = 20;
-        const maxX = s.width - n.width - pad;
-        const maxY = s.height - n.height - pad;
-
-        noPos.x = Math.random() * (maxX - pad) + pad;
-        noPos.y = Math.random() * (maxY - pad) + pad;
-        syncNoToStyle();
-
-        requestAnimationFrame(stepAvoidance);
-        return;
-      }
-
-      let vx = 0, vy = 0;
-
-      if (dist < R && dist > 0.001) {
-        const t = (R - dist) / R;
-        const mag = strength * (t * t) * maxSpeed;
-
-        vx = (dx / dist) * mag;
-        vy = (dy / dist) * mag;
-      }
-
-      if (dist < R * 0.7) {
-        vx += (Math.random() - 0.5) * 1.2;
-        vy += (Math.random() - 0.5) * 1.2;
-      }
-
-      const pad = 10;
-      const maxX = s.width - n.width - pad;
-      const maxY = s.height - n.height - pad;
-
-      noPos.x = Math.max(pad, Math.min(noPos.x + vx, maxX));
-      noPos.y = Math.max(pad, Math.min(noPos.y + vy, maxY));
-
-      syncNoToStyle();
-      requestAnimationFrame(stepAvoidance);
+    function resetAll(){
+      boxes.forEach(b => { b.value = ""; b.classList.remove("wrong"); });
+      note.textContent = "";
+      inputsWrap.classList.remove("shake");
+      boxes[0].focus();
     }
 
+    function validate(){
+      clearMarks();
 
-    stage.addEventListener("mousemove", (e) => {
-      const s = stage.getBoundingClientRect();
-      mouse.x = e.clientX - s.left;
-      mouse.y = e.clientY - s.top;
-    });
+      const attemptArr = boxes.map(b => normalizeChar(b.value));
+      const answerArr = ANSWER.split("");
 
-    stage.addEventListener("touchmove", (e) => {
-      const s = stage.getBoundingClientRect();
-      const t = e.touches[0];
-      mouse.x = t.clientX - s.left;
-      mouse.y = t.clientY - s.top;
-    }, { passive: true });
+      // Require all filled
+      if (attemptArr.some(x => x === "")){
+        note.textContent = "Fill all 8 letters 🙂";
+        inputsWrap.classList.add("shake");
+        setTimeout(() => inputsWrap.classList.remove("shake"), 320);
+        return false;
+      }
 
-    // ---- Flow transitions ----
-    yesBtn.addEventListener("click", () => {
-      yesBtn.style.display = "none";
-      noBtn.style.display = "none";
+      let ok = true;
+      for (let i = 0; i < 8; i++){
+        if (attemptArr[i] !== answerArr[i]){
+          boxes[i].classList.add("wrong");
+          ok = false;
+        }
+      }
 
-      yayScreen.classList.add("show");
-
-      setTimeout(() => {
-        yayScreen.classList.remove("show");
-        planScreen.classList.add("show");
-      }, 3500);
-    });
-
-    // ---- One form submit (no email popup) via Formspree ----
-    const state = { time: null, cuisine: null };
-
-    function setSelected(groupEl, btn) {
-      [...groupEl.querySelectorAll("button")].forEach(b => b.classList.remove("selected"));
-      btn.classList.add("selected");
+      if (!ok){
+        note.textContent = "Not quite… try again 🙂";
+        inputsWrap.classList.add("shake");
+        setTimeout(() => inputsWrap.classList.remove("shake"), 320);
+      }
+      return ok;
     }
 
-    document.getElementById("timeRow").addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-time]");
-      if (!btn) return;
-      state.time = btn.getAttribute("data-time"); // confirm / issue
-      setSelected(document.getElementById("timeRow"), btn);
-      statusLine.textContent = "";
+    function unlock(){
+      if (!validate()) return;
+      // Transition
+      puzzleScreen.classList.remove("show");
+      revealScreen.classList.add("show");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Button actions
+    unlockBtn.addEventListener("click", unlock);
+    resetBtn.addEventListener("click", resetAll);
+
+    // Enter key triggers unlock from any box
+    boxes.forEach((b) => {
+      b.addEventListener("keydown", (e) => {
+        if (e.key === "Enter"){
+          e.preventDefault();
+          unlock();
+        }
+      });
     });
 
-    document.getElementById("cuisineRow").addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-cuisine]");
-      if (!btn) return;
-      state.cuisine = btn.getAttribute("data-cuisine");
-      setSelected(document.getElementById("cuisineRow"), btn);
-      statusLine.textContent = "";
-    });
+    // Auto-advance + backspace behavior (mobile friendly)
+    boxes.forEach((box, idx) => {
+      box.addEventListener("input", () => {
+        clearMarks();
+        const val = normalizeChar(box.value);
+        box.value = val;
 
-    document.getElementById("submitAll").addEventListener("click", async () => {
-      const dish = document.getElementById("dishText").value.trim();
-      const restrictions = document.getElementById("restrictionsText").value.trim();
+        if (val && idx < boxes.length - 1){
+          boxes[idx + 1].focus();
+        }
+      });
 
-      if (!FORMSPREE_ENDPOINT || FORMSPREE_ENDPOINT.includes("PASTE_YOUR_FORMSPREE_URL_HERE")) {
-        statusLine.textContent = "Samarth: paste your Formspree link into the code first 🙂";
-        return;
-      }
+      box.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace"){
+          clearMarks();
+          if (box.value === "" && idx > 0){
+            boxes[idx - 1].focus();
+            // leave previous value as-is; user can backspace again to clear it
+          }
+        }
 
-      if (!state.time) {
-        statusLine.textContent = "Pick whether 8:30 works (or doesn’t).";
-        return;
-      }
+        // Allow letters only (block numbers/symbols)
+        if (e.key.length === 1){
+          const isLetter = /^[a-zA-Z]$/.test(e.key);
+          if (!isLetter){
+            e.preventDefault();
+          }
+        }
+      });
 
-      if (!state.cuisine && !dish) {
-        statusLine.textContent = "Pick a cuisine OR type the exact dish.";
-        return;
-      }
+      // Paste support: if user pastes "DISTANCE", spread across boxes
+      box.addEventListener("paste", (e) => {
+        e.preventDefault();
+        clearMarks();
 
-      statusLine.textContent = "Submitting…";
+        const text = (e.clipboardData || window.clipboardData).getData("text") || "";
+        const cleaned = text.toUpperCase().replace(/[^A-Z]/g, "");
+        if (!cleaned) return;
 
-      const payload = {
-        name: nm || document.getElementById("name").textContent || "Valentine",
-        date: "Feb 14",
-        time_ist: "8:30 PM IST",
-        time_status: state.time,     // confirm/issue
-        cuisine: state.cuisine || "",
-        restrictions: restrictions || "",
-        exact_dish: dish || "",
-        page: window.location.href
-      };
-
-      try {
-        const res = await fetch(FORMSPREE_ENDPOINT, {
-          method: "POST",
-          headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(payload)
-        });
-
-        if (!res.ok) throw new Error("submit failed");
-
-        // Success screen
-        const card = document.querySelector(".card");
-        card.innerHTML = `
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:30px;">
-          <div style="font-size:42px;font-weight:900;">💖 Valentine Dinner Confirmed 💖</div>
-      
-          <div style="margin-top:20px;font-size:16px;color:#333;">
-            📅 February 14 <br>
-            🕣 8:30 PM IST
-          </div>
-      
-          <div style="margin-top:18px;font-size:16px;color:#333;">
-            🍽 The food will be delivered to your home around 8:30 PM IST.
-          </div>
-      
-          <div style="margin-top:18px;font-size:16px;color:#333;">
-            Setting the vibe!<br>
-            Setup your laptop for video call. <br>
-            Light the scented candle. Dim the lights (if possible)<br>
-            Connect your phone to the bluetooth speaker and <a href="https://www.youtube.com/watch?v=It80L-_WEGM" target="_blank" style="color:#ff4d6d;text-decoration:none;font-weight:600;">play this music</a> in low volume.<br>
-            Get ready for a romantic evening!
-          </div>      
-          <div style="margin-top:18px;font-size:16px;color:#333;">
-            💻 We’ll meet here:
-          </div>
-      
-          <div style="margin-top:8px;font-size:15px;">
-            <a href="https://meet.google.com/bqc-tqtj-uqx" target="_blank" style="color:#ff4d6d;text-decoration:none;font-weight:600;">
-              https://meet.google.com/bqc-tqtj-uqx
-            </a>
-          </div>
-      
-          <div style="margin-top:18px;font-size:13px;color:#666;">
-            I’ll share all these details on Whatsapp too.
-          </div>
-        </div>
-      `;
-      } catch (err) {
-        statusLine.textContent = "Submit failed. Try again (adblocker can block it sometimes).";
-      }
-    });
-
-    // init
-    window.addEventListener("resize", () => {
-      placeInitialButtons();
-      initNoPosFromDOM();
-    });
-
-    requestAnimationFrame(() => {
-      placeInitialButtons();
-      initNoPosFromDOM();
-      requestAnimationFrame(stepAvoidance);
+        for (let i = 0; i < boxes.length; i++){
+          boxes[i].value = cleaned[i] ? cleaned[i] : "";
+        }
+        const firstEmpty = boxes.findIndex(x => x.value === "");
+        (firstEmpty === -1 ? boxes[7] : boxes[firstEmpty]).focus();
+      });
     });
   </script>
 </body>
-
 </html>
